@@ -323,6 +323,9 @@ class ConnectycubeFlutterCallKit {
     log('[ConnectycubeFlutterCallKit][_processEvent] eventData: $eventData');
 
     var event = eventData["event"] as String;
+
+    log('[ConnectycubeFlutterCallKit][_processEvent] event: $event');
+
     var arguments = Map<String, dynamic>.from(eventData['args']);
 
     switch (event) {

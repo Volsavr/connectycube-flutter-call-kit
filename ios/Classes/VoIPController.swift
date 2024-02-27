@@ -96,13 +96,17 @@ extension VoIPController: PKPushRegistryDelegate {
 
              let callUuid = Utils.uuid(string: callId)
 
-             let displayName = data[VoIPController.paramFromDisplayName] as! String
-
+             var displayName = data[VoIPController.paramFromDisplayName] as? String
+             
+            if(displayName == nil ||  displayName!.isEmpty){
+                displayName = data[VoIPController.paramFromUser] as! String
+            }
+            
              let opponents: [Int] = [1]
 
              self.callKitController.reportIncomingCall(uuid: callUuid.uuidString.lowercased(),
                   callType: 0, callInitiatorId: 0,
-                  callInitiatorName: displayName,
+                  callInitiatorName: displayName!,
                   opponents: opponents,
                   userInfo : nil) { (error) in
 

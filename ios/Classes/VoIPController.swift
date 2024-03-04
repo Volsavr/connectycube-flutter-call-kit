@@ -18,6 +18,7 @@ class VoIPController : NSObject{
         private static let paramData = "data"
         private static let paramTimestamp = "timestamp"
         private static let paramCallId = "call_id"
+        private static let paramFromTag = "from_tag"
         private static let paramSipLineId = "device_sip_account_id"
         private static let paramFromDisplayName = "from_display_name"
         private static let paramFromUser = "from_user"
@@ -92,7 +93,7 @@ extension VoIPController: PKPushRegistryDelegate {
                 return;
              }
 
-             let callId = data[VoIPController.paramCallId] as! String
+             let callId = data[VoIPController.paramFromTag] as! String
 
              let callUuid = Utils.uuid(string: callId)
 
@@ -122,41 +123,6 @@ extension VoIPController: PKPushRegistryDelegate {
         } else {
           completion()
         }
-
-        /*if type == .voIP{
-            let callId = callData["session_id"] as! String
-            let signalingType = callData["signal_type"] as? String
-            
-            if (signalingType != nil && (signalingType == "endCall" || signalingType == "rejectCall")) {
-                self.callKitController.reportCallEnded(uuid: UUID(uuidString: callId.lowercased())!, reason: CallEndedReason.remoteEnded)
-                
-                completion()
-            } else if (signalingType != nil && signalingType == "startCall") {
-                let callType = callData["call_type"] as! Int
-                let callInitiatorId = callData["caller_id"] as! Int
-                let callInitiatorName = callData["caller_name"] as! String
-                let callOpponentsString = callData["call_opponents"] as! String
-                let callOpponents = callOpponentsString.components(separatedBy: ",")
-                    .map { Int($0) ?? 0 }
-                let userInfo = callData["user_info"] as? String
-                
-                self.callKitController.reportIncomingCall(uuid: callId.lowercased(), callType: callType, callInitiatorId: callInitiatorId, callInitiatorName: callInitiatorName, opponents: callOpponents, userInfo: userInfo) { (error) in
-                    
-                    completion()
-                    
-                    if(error == nil){
-                        print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
-                    } else {
-                        print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
-                    }
-                }
-            } else {
-                print("[VoIPController][didReceiveIncomingPushWith] unknown 'signal_type' was received")
-                completion()
-            }
-        } else {
-            completion()
-        }*/
     }
 
 }

@@ -25,7 +25,7 @@ import com.skyfishjy.library.RippleBackground
 
 
 fun createStartIncomingScreenIntent(
-    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    context: Context, callId: String, callType: Int, callInitiatorId: Long,
     callInitiatorName: String, opponents: ArrayList<Int>, callPhoto: String?, userInfo: String
 ): Intent {
     val intent = Intent(context, IncomingCallActivity::class.java)

@@ -147,7 +147,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     }
 
                     val callType = arguments["call_type"] as Int
-                    val callInitiatorId = arguments["caller_id"] as Int
+                    val callInitiatorId = arguments["caller_id"] as Long
                     val callInitiatorName = arguments["caller_name"] as String
                     val callOpponents = ArrayList((arguments["call_opponents"] as String)
                         .split(',')
@@ -381,7 +381,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
 }
 
 fun notifyAboutIncomingCall(
-    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    context: Context, callId: String, callType: Int, callInitiatorId: Long,
     callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
 ) {
     val intent = Intent(ACTION_CALL_INCOMING)

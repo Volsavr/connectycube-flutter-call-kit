@@ -12,6 +12,7 @@ import PushKit
 class VoIPController : NSObject{
     let callKitController: CallKitController
     var tokenListener : ((String)->Void)?
+    var debugInfoListener : ((String)->Void)?
     var voipToken: String?
 
         private static let paramType = "type"
@@ -42,6 +43,12 @@ class VoIPController : NSObject{
         print("[VoIPController][getVoIPToken] \(voipToken)")
         return voipToken
     }
+
+    func reportDebugInfo(debugInfo: String) {
+        if debugInfoListener != nil {
+           debugInfoListener!(debugInfo)
+        }
+    }
 }
 
 //MARK: VoIP Token notifications
@@ -68,7 +75,8 @@ extension VoIPController: PKPushRegistryDelegate {
     
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         print("[VoIPController][pushRegistry][didReceiveIncomingPushWith] payload: \(payload.dictionaryPayload)")
-        
+        reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> received push notification")
+
         let callData = payload.dictionaryPayload
 
         if type == .voIP{
@@ -77,6 +85,7 @@ extension VoIPController: PKPushRegistryDelegate {
 
             if(signalingType != VoIPController.signalTypeCallStart) {
                 print("[VoIPController][didReceiveIncomingPushWith] unknown 'signal_type' was received")
+                reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> unknown 'signal_type' was received")
                 completion()
                 return;
             }
@@ -89,11 +98,14 @@ extension VoIPController: PKPushRegistryDelegate {
 
              if(now - Int64(bornAt!) > VoIPController.callNotificationTimeout) {
                 print("[VoIPController][didReceiveIncomingPushWith] Message too old for processing a notification")
+                reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> Message too old for processing a notification")
                 completion()
                 return;
              }
 
              let callId = data[VoIPController.paramFromTag] as! String
+
+             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> callId \(callId)")
 
              let callUuid = Utils.uuid(string: callId)
 
@@ -115,8 +127,10 @@ extension VoIPController: PKPushRegistryDelegate {
 
                             if(error == nil){
                                 print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
+                                self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> reportIncomingCall SUCCESS")
                             } else {
                                 print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+                                self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> ERROR \(error?.localizedDescription ?? "none")")
                             }
                   }
 

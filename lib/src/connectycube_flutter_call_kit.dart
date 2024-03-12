@@ -39,6 +39,7 @@ class ConnectycubeFlutterCallKit {
   static int _bgHandler = -1;
 
   static Function(String newToken)? onTokenRefreshed;
+  static Function(String debugInfo)? onDebugInfoReceived;
 
   /// iOS only callbacks
   static Function(bool isMuted, String sessionId)? onCallMuted;
@@ -329,6 +330,10 @@ class ConnectycubeFlutterCallKit {
     var arguments = Map<String, dynamic>.from(eventData['args']);
 
     switch (event) {
+      case 'serviceDebugInfo':
+        onDebugInfoReceived?.call(arguments['debugInfo']);
+        break;
+
       case 'voipToken':
         onTokenRefreshed?.call(arguments['voipToken']);
         break;

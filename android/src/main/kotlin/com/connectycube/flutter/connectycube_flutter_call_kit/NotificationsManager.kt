@@ -37,7 +37,7 @@ fun cancelCallNotification(context: Context, callId: String) {
 }
 
 fun showCallNotification(
-    context: Context, callId: String, callType: Int, callInitiatorId: Int,
+    context: Context, callId: String, callType: Int, callInitiatorId: Long,
     callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
 ) {
     Log.d("NotificationsManager", "[showCallNotification]")
@@ -77,7 +77,7 @@ fun showCallNotification(
     val callData = Bundle()
     callData.putString(EXTRA_CALL_ID, callId)
     callData.putInt(EXTRA_CALL_TYPE, callType)
-    callData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    callData.putLong(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
     callData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
     callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
     callData.putString(EXTRA_CALL_PHOTO, callPhoto)
@@ -266,7 +266,7 @@ fun addCallFullScreenIntent(
     notificationBuilder: NotificationCompat.Builder,
     callId: String,
     callType: Int,
-    callInitiatorId: Int,
+    callInitiatorId: Long,
     callInitiatorName: String,
     callOpponents: ArrayList<Int>,
     callPhoto: String?,

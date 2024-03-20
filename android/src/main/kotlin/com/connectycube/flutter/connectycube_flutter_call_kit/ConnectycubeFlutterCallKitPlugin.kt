@@ -146,14 +146,19 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                         return
                     }
 
+
                     val callType = arguments["call_type"] as Int
-                    val callInitiatorId = arguments["caller_id"] as Long
+
+                    val callInitiatorIdString = arguments["caller_id"].toString()
+                    val callInitiatorId = callInitiatorIdString.toLong()
+
                     val callInitiatorName = arguments["caller_name"] as String
                     val callOpponents = ArrayList((arguments["call_opponents"] as String)
                         .split(',')
                         .map { it.toInt() })
                     val callPhoto = arguments["photo_url"] as String?
                     val userInfo = arguments["user_info"] as String
+
 
                     showCallNotification(
                         applicationContext!!,
@@ -604,7 +609,7 @@ class CallStreamHandler(private var context: Context) : EventChannel.StreamHandl
         val callEventMap = HashMap<String, Any?>()
         callEventMap["session_id"] = callIdToProcess
         callEventMap["call_type"] = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
-        callEventMap["caller_id"] = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
+        callEventMap["caller_id"] = intent.getLongExtra(EXTRA_CALL_INITIATOR_ID, -1)
         callEventMap["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         callEventMap["call_opponents"] =
             intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")

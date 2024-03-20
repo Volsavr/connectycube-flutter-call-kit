@@ -46,7 +46,7 @@ class IncomingCallActivity : Activity() {
 
     private var callId: String? = null
     private var callType = -1
-    private var callInitiatorId = -1
+    private var callInitiatorId: Long = -1
     private var callInitiatorName: String? = null
     private var callOpponents: ArrayList<Int>? = ArrayList()
     private var callPhoto: String? = null
@@ -152,7 +152,7 @@ class IncomingCallActivity : Activity() {
     private fun processIncomingData(intent: Intent) {
         callId = intent.getStringExtra(EXTRA_CALL_ID)
         callType = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
-        callInitiatorId = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
+        callInitiatorId = intent.getLongExtra(EXTRA_CALL_INITIATOR_ID, -1)
         callInitiatorName = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         callOpponents = intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)
         callPhoto = intent.getStringExtra(EXTRA_CALL_PHOTO)
@@ -208,7 +208,7 @@ class IncomingCallActivity : Activity() {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
         bundle.putInt(EXTRA_CALL_TYPE, callType)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        bundle.putLong(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
         bundle.putString(EXTRA_CALL_PHOTO, callPhoto)
@@ -225,7 +225,7 @@ class IncomingCallActivity : Activity() {
         val bundle = Bundle()
         bundle.putString(EXTRA_CALL_ID, callId)
         bundle.putInt(EXTRA_CALL_TYPE, callType)
-        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        bundle.putLong(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
         bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
         bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
         bundle.putString(EXTRA_CALL_PHOTO, callPhoto)

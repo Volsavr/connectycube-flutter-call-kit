@@ -110,11 +110,17 @@ extension VoIPController: PKPushRegistryDelegate {
              let callUuid = Utils.uuid(string: callId)
 
              var displayName = data[VoIPController.paramFromDisplayName] as? String
-             
-            if(displayName == nil ||  displayName!.isEmpty){
-                displayName = data[VoIPController.paramFromUser] as! String
-            }
-            
+
+             //fallback to caller identity
+             if(displayName == nil ||  displayName!.isEmpty){
+                displayName = data[VoIPController.paramFromUser] as? String
+             }
+
+             //fallback to default
+             if(displayName == nil ||  displayName!.isEmpty){
+                displayName = "Unknown"
+             }
+
              let opponents: [Int] = [1]
 
              self.callKitController.reportIncomingCall(uuid: callUuid.uuidString.lowercased(),

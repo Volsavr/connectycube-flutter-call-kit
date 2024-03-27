@@ -238,7 +238,7 @@ class FlutterConnectycubeBackgroundExecutor : MethodCallHandler {
         val parameters = HashMap<String, Any?>()
         parameters["session_id"] = intent.getStringExtra(EXTRA_CALL_ID)
         parameters["call_type"] = intent.getIntExtra(EXTRA_CALL_TYPE, -1)
-        parameters["caller_id"] = intent.getIntExtra(EXTRA_CALL_INITIATOR_ID, -1)
+        parameters["caller_id"] = intent.getLongExtra(EXTRA_CALL_INITIATOR_ID, -1)
         parameters["caller_name"] = intent.getStringExtra(EXTRA_CALL_INITIATOR_NAME)
         parameters["call_opponents"] =
             intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)?.joinToString(separator = ",")

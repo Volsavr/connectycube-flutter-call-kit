@@ -59,7 +59,7 @@ class CallKitController : NSObject {
             providerConfiguration = CXProviderConfiguration(localizedName: appName)
         }
         
-        providerConfiguration.supportsVideo = true
+        providerConfiguration.supportsVideo = false
         providerConfiguration.maximumCallsPerCallGroup = 1
         providerConfiguration.maximumCallGroups = 1;
         providerConfiguration.supportedHandleTypes = [.generic]
@@ -209,8 +209,11 @@ class CallKitController : NSObject {
                     .allowBluetoothA2DP,
                 ])
             try audioSession.setMode(AVAudioSession.Mode.voiceChat)
-            try audioSession.setPreferredSampleRate(44100.0)
-            try audioSession.setPreferredIOBufferDuration(0.005)
+
+            //Note: disabled extra settings
+            //try audioSession.setPreferredSampleRate(44100.0)
+            //try audioSession.setPreferredIOBufferDuration(0.005)
+
             try audioSession.setActive(active)
         } catch {
             print(error)

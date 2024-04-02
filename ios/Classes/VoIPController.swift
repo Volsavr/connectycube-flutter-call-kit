@@ -105,21 +105,27 @@ extension VoIPController: PKPushRegistryDelegate {
 
              let callId = data[VoIPController.paramFromTag] as! String
 
-             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> callId \(callId)")
+             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_tag: \(callId)")
 
              let callUuid = Utils.uuid(string: callId)
 
              var displayName = data[VoIPController.paramFromDisplayName] as? String
+             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_display_name: \(displayName)")
+
+             var callerId = data[VoIPController.paramFromUser] as? String
+             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_user: \(callerId)")
 
              //fallback to caller identity
              if(displayName == nil ||  displayName!.isEmpty){
-                displayName = data[VoIPController.paramFromUser] as? String
+                displayName = callerId
              }
 
              //fallback to default
              if(displayName == nil ||  displayName!.isEmpty){
                 displayName = "Unknown"
              }
+
+            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> selected display name: \(displayName)")
 
              let opponents: [Int] = [1]
 

@@ -208,7 +208,7 @@ class CallKitController : NSObject {
                     .allowBluetooth,
                     .allowBluetoothA2DP,
                 ])
-            try audioSession.setMode(AVAudioSession.Mode.videoChat)
+            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
             try audioSession.setPreferredSampleRate(44100.0)
             try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setActive(active)

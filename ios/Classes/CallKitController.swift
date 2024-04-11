@@ -235,14 +235,29 @@ extension CallKitController {
         requestTransaction(transaction)
     }
     
-    private func requestTransaction(_ transaction: CXTransaction) {
+    private func requestTransaction(_ transaction: CXTransaction, completion: ((Bool) -> Void)? = nil) {
         callController.request(transaction) { error in
             if let error = error {
                 print("[CallKitController][requestTransaction] Error: \(error.localizedDescription)")
             } else {
+                completion?(error == nil)
                 print("[CallKitController][requestTransaction] successfully")
             }
         }
+    }
+    
+    private func updateExistingCall(uuid: UUID, callerName: String){
+        print("[CallKitController][updateExistingCall] uuid: \(uuid.uuidString.lowercased())")
+        
+        let update = CXCallUpdate()
+        update.hasVideo = false
+        update.supportsGrouping = false
+        update.supportsUngrouping = false
+        update.supportsHolding = false
+        update.supportsDTMF = false
+        update.localizedCallerName = callerName
+        
+        provider.reportCall(with: uuid, updated: update)
     }
     
     func setHeld(uuid: UUID, onHold: Bool) {
@@ -269,16 +284,30 @@ extension CallKitController {
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
         print("[CallKitController][startCall] handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
         
-        let handle = CXHandle(type: .generic, value: handle)
+        let cxHandle = CXHandle(type: .generic, value: handle)
         let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
-        let startCallAction = CXStartCallAction(call: callUUID!, handle: handle)
+        let startCallAction = CXStartCallAction(call: callUUID!, handle: cxHandle)
         startCallAction.isVideo = videoEnabled
-        
+
         let transaction = CXTransaction(action: startCallAction)
         
-        self.callStates[uuid!.lowercased()] = .accepted
+        let opponents = [1]
+        self.currentCallData["session_id"] = callUUID?.uuidString.lowercased()
+        self.currentCallData["caller_name"] = handle
         
-        requestTransaction(transaction);
+        self.currentCallData["session_id"] = uuid
+        self.currentCallData["call_type"] = 0
+        self.currentCallData["caller_id"] = 0
+        self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
+        self.currentCallData["user_info"] = nil
+        
+        self.callStates[callUUID!.uuidString.lowercased()] = .pending
+        self.callsData[callUUID!.uuidString.lowercased()] = self.currentCallData
+        
+        requestTransaction(
+            transaction,
+            completion: { _ in self.updateExistingCall(uuid: callUUID!, callerName: handle); }
+        )
     }
     
     func answerCall(uuid: String) {
@@ -352,9 +381,11 @@ extension CallKitController: CXProviderDelegate {
     
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         print("[CallKitController][CXStartCallAction]: callUUID: \(action.callUUID.uuidString.lowercased())")
-        
-        actionListener?(.startCall, action.callUUID, currentCallData)
-        callStates[action.callUUID.uuidString.lowercased()] = .accepted
+
+        //TODO: Notification
+        //actionListener?(.startCall, action.callUUID, currentCallData)
+
+        //setup audioSession
         configureAudioSession(active: true)
         
         action.fulfill()

@@ -194,6 +194,32 @@ class ConnectycubeFlutterCallKit {
         "showCallNotification", callEvent.toMap());
   }
 
+  /// Show outgoing call notification
+  static Future<void> showOutgoingCallNotification(CallEvent callEvent) async {
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod(
+        "startCall",
+        {
+          'session_id': callEvent.sessionId,
+          'number':callEvent.callerName
+        });
+  }
+
+  /// Report that the current outgoing call has been connected by your application
+  static Future<void> reportOutgoingCallConnected({required String? sessionId,
+    required bool connected}) async {
+
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel
+        .invokeMethod("reportOutgoingCall",
+        {
+          'session_id': sessionId,
+          'connected': connected
+        });
+  }
+
   /// Report that the current active call has been accepted by your application
   ///
   static Future<void> reportCallAccepted({required String? sessionId}) async {

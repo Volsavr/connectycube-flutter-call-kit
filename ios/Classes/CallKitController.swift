@@ -37,6 +37,7 @@ class CallKitController : NSObject {
     private let provider : CXProvider
     private let callController : CXCallController
     var actionListener : ((CallEvent, UUID, [String:Any]?)->Void)?
+    var debugInfoListener : ((String)->Void)?
     var currentCallData: [String: Any] = [:]
     private var callStates: [String:CallState] = [:]
     private var callsData: [String:[String:Any]] = [:]
@@ -207,6 +208,7 @@ class CallKitController : NSObject {
                 options: [
                     .allowBluetooth,
                     .allowBluetoothA2DP,
+                    .defaultToSpeaker
                 ])
             try audioSession.setMode(AVAudioSession.Mode.voiceChat)
 
@@ -235,14 +237,16 @@ extension CallKitController {
         requestTransaction(transaction)
     }
     
-    private func requestTransaction(_ transaction: CXTransaction, completion: ((Bool) -> Void)? = nil) {
+    private func requestTransaction(_ transaction: CXTransaction,
+                    completion: ((Bool) -> Void)? = nil) {
         callController.request(transaction) { error in
             if let error = error {
                 print("[CallKitController][requestTransaction] Error: \(error.localizedDescription)")
             } else {
-                completion?(error == nil)
                 print("[CallKitController][requestTransaction] successfully")
             }
+
+            completion?(error == nil)
         }
     }
     
@@ -283,7 +287,8 @@ extension CallKitController {
     
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
         print("[CallKitController][startCall] handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
-        
+        debugInfoListener?("startCall -> display push notification handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
+
         let cxHandle = CXHandle(type: .generic, value: handle)
         let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
         let startCallAction = CXStartCallAction(call: callUUID!, handle: cxHandle)
@@ -306,7 +311,13 @@ extension CallKitController {
         
         requestTransaction(
             transaction,
-            completion: { _ in self.updateExistingCall(uuid: callUUID!, callerName: handle); }
+            completion: { result in
+                            self.debugInfoListener?("startCall -> display push notification: \(result)")
+
+                            if(result) {
+                                self.updateExistingCall(uuid: callUUID!, callerName: handle);
+                            }
+                        }
         )
     }
     

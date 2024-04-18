@@ -26,6 +26,12 @@ class CallStreamHandler: NSObject, FlutterStreamHandler {
 
             events(data)
         }
+
+        SwiftConnectycubeFlutterCallKitPlugin.callController.debugInfoListener = { debugInfo in
+            let data: [String: Any] = ["event" : "serviceDebugInfo", "args": ["debugInfo" : debugInfo]]
+
+            events(data)
+        }
         
         return nil
     }

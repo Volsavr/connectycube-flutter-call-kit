@@ -242,6 +242,7 @@ extension CallKitController {
         callController.request(transaction) { error in
             if let error = error {
                 print("[CallKitController][requestTransaction] Error: \(error.localizedDescription)")
+                self.debugInfoListener?("requestTransaction -> error: \(error.localizedDescription))")
             } else {
                 print("[CallKitController][requestTransaction] successfully")
             }

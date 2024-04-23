@@ -88,7 +88,37 @@ class CallKitController : NSObject {
             providerConfiguration.iconTemplateImageData = iconData
         }
     }
-    
+
+    func hasActiveCall() -> Bool {
+       return self.callsData.count > 0
+    }
+
+
+    @objc func reportCanceledIncomingCall(
+            uuid: String,
+            callType: Int,
+            callInitiatorId: Int,
+            callInitiatorName: String,
+            opponents: [Int],
+            userInfo: String?
+    ) {
+        print("[CallKitController][reportCanceledIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? "nil")")
+
+        let update = CXCallUpdate()
+        update.localizedCallerName = callInitiatorName
+        update.remoteHandle = CXHandle(type: .generic, value: uuid)
+        update.hasVideo = callType == 1
+        update.supportsGrouping = false
+        update.supportsUngrouping = false
+        update.supportsHolding = false
+        update.supportsDTMF = false
+
+        let callid = UUID(uuidString: uuid)!
+        provider.reportNewIncomingCall(with: callid, update: update) { error in
+           self.provider.reportCall(with: callid, endedAt: Date(), reason: .answeredElsewhere)
+        }
+    }
+
     @objc func reportIncomingCall(
         uuid: String,
         callType: Int,

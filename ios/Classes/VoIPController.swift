@@ -76,78 +76,97 @@ extension VoIPController: PKPushRegistryDelegate {
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         print("[VoIPController][pushRegistry][didReceiveIncomingPushWith] payload: \(payload.dictionaryPayload)")
         reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> received push notification")
-
+        
         let callData = payload.dictionaryPayload
-
+        
         if type == .voIP{
-
+            
             let signalingType = callData[VoIPController.paramType] as? String;
-
+            
             if(signalingType != VoIPController.signalTypeCallStart) {
                 print("[VoIPController][didReceiveIncomingPushWith] unknown 'signal_type' was received")
                 reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> unknown 'signal_type' was received")
                 completion()
-                return;
+                return
             }
-
+            
+            // prepare call parameters
             let data = callData[VoIPController.paramData] as! [String: Any]
-
+            
+            let callId = data[VoIPController.paramFromTag] as! String
+            
+            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_tag: \(callId)")
+            
+            let callUuid = Utils.uuid(string: callId)
+            
+            var displayName = data[VoIPController.paramFromDisplayName] as? String
+            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_display_name: \(displayName)")
+            
+            var callerId = data[VoIPController.paramFromUser] as? String
+            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_user: \(callerId)")
+            
+            //fallback to caller identity
+            if(displayName == nil ||  displayName!.isEmpty){
+                displayName = callerId
+            }
+            
+            //fallback to default
+            if(displayName == nil ||  displayName!.isEmpty){
+                displayName = "Unknown"
+            }
+            
+            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> selected display name: \(displayName)")
+            
+            let opponents: [Int] = [1]
+            
+            // validate call date
             let bornAt = Double(data[VoIPController.paramBornAt] as! String)
             
             let now = Int64(Date().timeIntervalSince1970)
-
-             if(now - Int64(bornAt!) > VoIPController.callNotificationTimeout) {
+            
+            if(now - Int64(bornAt!) > VoIPController.callNotificationTimeout) {
                 print("[VoIPController][didReceiveIncomingPushWith] Message too old for processing a notification")
                 reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> Message too old for processing a notification")
+                
+                //report canceled call
+                self.callKitController.reportCanceledIncomingCall(uuid: callUuid.uuidString.lowercased(),
+                                                                  callType: 0, callInitiatorId: 0,
+                                                                  callInitiatorName: displayName!,
+                                                                  opponents: opponents,
+                                                                  userInfo : nil)
+                
                 completion()
-                return;
-             }
+                return
+            }
 
-             let callId = data[VoIPController.paramFromTag] as! String
+            // validate existing of another call
+            if(self.callKitController.hasActiveCall()){
+              print("[VoIPController][didReceiveIncomingPushWith] Call limit exceeded. Call notification rejected")
+              reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> Call limit exceeded. Call notification rejected")
+              completion()
+              return
+            }
 
-             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_tag: \(callId)")
-
-             let callUuid = Utils.uuid(string: callId)
-
-             var displayName = data[VoIPController.paramFromDisplayName] as? String
-             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_display_name: \(displayName)")
-
-             var callerId = data[VoIPController.paramFromUser] as? String
-             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_user: \(callerId)")
-
-             //fallback to caller identity
-             if(displayName == nil ||  displayName!.isEmpty){
-                displayName = callerId
-             }
-
-             //fallback to default
-             if(displayName == nil ||  displayName!.isEmpty){
-                displayName = "Unknown"
-             }
-
-            reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> selected display name: \(displayName)")
-
-             let opponents: [Int] = [1]
-
-             self.callKitController.reportIncomingCall(uuid: callUuid.uuidString.lowercased(),
-                  callType: 0, callInitiatorId: 0,
-                  callInitiatorName: displayName!,
-                  opponents: opponents,
-                  userInfo : nil) { (error) in
-
-                            completion()
-
-                            if(error == nil){
-                                print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
-                                self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> reportIncomingCall SUCCESS")
-                            } else {
-                                print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
-                                self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> ERROR \(error?.localizedDescription ?? "none")")
-                            }
-                  }
-
+            // report incoming call
+            self.callKitController.reportIncomingCall(uuid: callUuid.uuidString.lowercased(),
+                                                      callType: 0, callInitiatorId: 0,
+                                                      callInitiatorName: displayName!,
+                                                      opponents: opponents,
+                                                      userInfo : nil) { (error) in
+                
+                completion()
+                
+                if(error == nil){
+                    print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall SUCCESS")
+                    self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> reportIncomingCall SUCCESS")
+                } else {
+                    print("[VoIPController][didReceiveIncomingPushWith] reportIncomingCall ERROR: \(error?.localizedDescription ?? "none")")
+                    self.reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> ERROR \(error?.localizedDescription ?? "none")")
+                }
+            }
+            
         } else {
-          completion()
+            completion()
         }
     }
 

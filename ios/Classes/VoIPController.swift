@@ -89,20 +89,17 @@ extension VoIPController: PKPushRegistryDelegate {
                 completion()
                 return
             }
-            
-            // prepare call parameters
-            let data = callData[VoIPController.paramData] as! [String: Any]
-            
-            let callId = data[VoIPController.paramFromTag] as! String
+
+            let callId = callData[VoIPController.paramFromTag] as! String
             
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_tag: \(callId)")
             
             let callUuid = Utils.uuid(string: callId)
             
-            var displayName = data[VoIPController.paramFromDisplayName] as? String
+            var displayName = callData[VoIPController.paramFromDisplayName] as? String
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_display_name: \(displayName)")
             
-            var callerId = data[VoIPController.paramFromUser] as? String
+            var callerId = callData[VoIPController.paramFromUser] as? String
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_user: \(callerId)")
             
             //fallback to caller identity
@@ -120,7 +117,7 @@ extension VoIPController: PKPushRegistryDelegate {
             let opponents: [Int] = [1]
             
             // validate call date
-            let bornAt = Double(data[VoIPController.paramBornAt] as! String)
+            let bornAt = Double(callData[VoIPController.paramBornAt] as! String)
             
             let now = Int64(Date().timeIntervalSince1970)
             

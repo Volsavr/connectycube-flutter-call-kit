@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ace3c2"
+    android:background="#fff5f6f9"
     android:orientation="vertical">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/avatar_img"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
+        android:layout_width="132dp"
+        android:layout_height="132dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="64dp"
@@ -28,16 +28,12 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/avatar_img"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:ellipsize="end"
         android:lines="1"
-        android:shadowColor="#7F000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="4"
-        android:textColor="#FBFBFB"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:textColor="#606272"
+        android:textSize="18sp"
+        android:textFontWeight="600"
         tools:text="User Name" />
 
     <TextView
@@ -46,13 +42,11 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/user_name_txt"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
         android:gravity="center_horizontal"
-        android:shadowColor="#7F000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="4"
-        android:textColor="#FBFBFB"
-        android:textSize="18sp"
+        android:textColor="#9195ab"
+        android:textSize="16sp"
+        android:textFontWeight="400"
         tools:text="Incoming audio call" />
 
     <LinearLayout
@@ -67,7 +61,7 @@
             android:id="@+id/reject_button_animation"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            app:rb_color="#FF5A33"
+            app:rb_color="#fa8282"
             app:rb_duration="3000"
             app:rb_radius="28dp"
             app:rb_rippleAmount="5"
@@ -85,12 +79,12 @@
                 tools:ignore="ContentDescription" />
         </com.skyfishjy.library.RippleBackground>
 
-        <com.skyfishjy.library.RippleBackground xmlns:app="http://schemas.android.com/apk/res-auto"
+        <com.skyfishjy.library.RippleBackground
             android:id="@+id/accept_button_animation"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:layout_marginStart="64dp"
-            app:rb_color="#80CB83"
+            app:rb_color="#74aff7"
             app:rb_duration="3000"
             app:rb_radius="28dp"
             app:rb_rippleAmount="5"

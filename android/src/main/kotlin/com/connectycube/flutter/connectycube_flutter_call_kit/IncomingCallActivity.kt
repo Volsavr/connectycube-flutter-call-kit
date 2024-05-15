@@ -166,7 +166,7 @@ class IncomingCallActivity : Activity() {
         val callSubTitleTxt: TextView =
             findViewById(resources.getIdentifier("call_type_txt", "id", packageName))
         callSubTitleTxt.text =
-            String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "Video" else "Audio")
+            String.format(CALL_TYPE_PLACEHOLDER, if (callType == 1) "video" else "audio")
 
         val callAcceptButton: ImageView =
             findViewById(resources.getIdentifier("start_call_btn", "id", packageName))

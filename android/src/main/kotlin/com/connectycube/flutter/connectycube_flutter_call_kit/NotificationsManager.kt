@@ -72,7 +72,7 @@ fun showCallNotification(
     val isVideoCall = callType == 1
 
     val callTypeTitle =
-        String.format(CALL_TYPE_PLACEHOLDER, if (isVideoCall) "Video" else "Audio")
+        String.format(CALL_TYPE_PLACEHOLDER, if (isVideoCall) "video" else "audio")
 
     val callData = Bundle()
     callData.putString(EXTRA_CALL_ID, callId)

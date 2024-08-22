@@ -237,8 +237,8 @@ class CallKitController : NSObject {
                 AVAudioSession.Category.playAndRecord,
                 options: [
                     .allowBluetooth,
-                    .allowBluetoothA2DP,
-                    .defaultToSpeaker
+                    .allowBluetoothA2DP
+                    //.defaultToSpeaker
                 ])
             try audioSession.setMode(AVAudioSession.Mode.voiceChat)
 

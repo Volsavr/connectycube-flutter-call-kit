@@ -42,7 +42,7 @@ class ConnectycubeFlutterCallKit {
   static Function(String debugInfo)? onDebugInfoReceived;
 
   /// iOS only callbacks
-  static Function(bool isMuted, String sessionId)? onCallMuted;
+  static Function(bool isMuted, String sessionId)? onCallMuteChanged;
 
   /// end iOS only callbacks
 
@@ -314,8 +314,8 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
-  /// Report that the current active call has been ended by your application
-  static Future<void> reportCallMuted(
+  /// Report that mute state of the current active call has been changed by your application
+  static Future<void> reportCallMuteChanges(
       {required String? sessionId, required bool? muted}) async {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
@@ -381,11 +381,11 @@ class ConnectycubeFlutterCallKit {
         break;
 
       case 'setMuted':
-        onCallMuted?.call(true, arguments["session_id"]);
+        onCallMuteChanged?.call(true, arguments["session_id"]);
         break;
 
       case 'setUnMuted':
-        onCallMuted?.call(false, arguments["session_id"]);
+        onCallMuteChanged?.call(false, arguments["session_id"]);
         break;
 
       case 'incomingCall':

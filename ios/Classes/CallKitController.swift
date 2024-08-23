@@ -155,6 +155,7 @@ class CallKitController : NSObject {
                     self.currentCallData["caller_name"] = callInitiatorName
                     self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
                     self.currentCallData["user_info"] = userInfo
+                    self.currentCallData["muted"] = false
                     
                     self.callStates[uuid] = .pending
                     self.callsData[uuid] = self.currentCallData
@@ -308,11 +309,15 @@ extension CallKitController {
     
     func setMute(uuid: UUID, muted: Bool){
         print("[CallKitController][setMute] uuid: \(uuid.uuidString.lowercased()), muted: \(muted)")
-        
+        debugInfoListener?("setMute -> uuid: \(uuid.uuidString.lowercased()), muted: \(muted)")
+
         let muteCallAction = CXSetMutedCallAction(call: uuid, muted: muted);
         let transaction = CXTransaction()
         transaction.addAction(muteCallAction)
-        
+
+        self.currentCallData["muted"] = muted
+        self.callsData[uuid.uuidString.lowercased()] = self.currentCallData
+
         requestTransaction(transaction)
     }
     
@@ -336,6 +341,7 @@ extension CallKitController {
         self.currentCallData["caller_id"] = 0
         self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
         self.currentCallData["user_info"] = nil
+        self.currentCallData["muted"] = false
         
         self.callStates[callUUID!.uuidString.lowercased()] = .pending
         self.callsData[callUUID!.uuidString.lowercased()] = self.currentCallData

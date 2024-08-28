@@ -95,13 +95,19 @@ extension VoIPController: PKPushRegistryDelegate {
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_tag: \(callId)")
             
             let callUuid = Utils.uuid(string: callId)
-            
+
             var displayName = callData[VoIPController.paramFromDisplayName] as? String
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_display_name: \(displayName)")
             
             var callerId = callData[VoIPController.paramFromUser] as? String
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> from_user: \(callerId)")
+
+            var userData: [String: Any] = [:]
+            userData["phoneNumber"] = callerId
+            userData["displayName"] = displayName
             
+            let userDataString = userData.jsonStringRepresentation
+
             //fallback to caller identity
             if(displayName == nil ||  displayName!.isEmpty){
                 displayName = callerId
@@ -115,7 +121,7 @@ extension VoIPController: PKPushRegistryDelegate {
             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> selected display name: \(displayName)")
             
             let opponents: [Int] = [1]
-            
+
             // validate call date
             let bornAt = Double(callData[VoIPController.paramBornAt] as! String)
             
@@ -130,7 +136,7 @@ extension VoIPController: PKPushRegistryDelegate {
                                                                   callType: 0, callInitiatorId: 0,
                                                                   callInitiatorName: displayName!,
                                                                   opponents: opponents,
-                                                                  userInfo : nil)
+                                                                  userInfo : userDataString)
                 
                 completion()
                 return
@@ -149,7 +155,7 @@ extension VoIPController: PKPushRegistryDelegate {
                                                       callType: 0, callInitiatorId: 0,
                                                       callInitiatorName: displayName!,
                                                       opponents: opponents,
-                                                      userInfo : nil) { (error) in
+                                                      userInfo : userDataString) { (error) in
                 
                 completion()
                 
@@ -166,5 +172,15 @@ extension VoIPController: PKPushRegistryDelegate {
             completion()
         }
     }
+}
 
+extension Dictionary {
+    var jsonStringRepresentation: String? {
+        guard let theJSONData = try? JSONSerialization.data(withJSONObject: self,
+                                          options: [.prettyPrinted]) else {
+            return nil
+        }
+
+        return String(data: theJSONData, encoding: .utf8)
+    }
 }

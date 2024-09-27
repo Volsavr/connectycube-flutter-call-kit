@@ -29,6 +29,7 @@ enum CallEndedReason : String {
 enum CallState : String {
     case pending = "pending"
     case accepted = "accepted"
+    case connected = "connected"
     case rejected = "rejected"
     case unknown = "unknown"
 }
@@ -41,7 +42,8 @@ class CallKitController : NSObject {
     var currentCallData: [String: Any] = [:]
     private var callStates: [String:CallState] = [:]
     private var callsData: [String:[String:Any]] = [:]
-    
+    private var _currentCallAnswerAction: CXAnswerCallAction?
+
     override init() {
         self.provider = CXProvider(configuration: CallKitController.providerConfiguration)
         self.callController = CXCallController()
@@ -265,17 +267,18 @@ extension CallKitController {
         
         self.callStates[uuid.uuidString.lowercased()] = .rejected
         
-        requestTransaction(transaction)
+        requestTransaction(transaction, context: "end")
     }
     
-    private func requestTransaction(_ transaction: CXTransaction,
+    private func requestTransaction(_ transaction: CXTransaction, context: String,
                     completion: ((Bool) -> Void)? = nil) {
         callController.request(transaction) { error in
             if let error = error {
-                print("[CallKitController][requestTransaction] Error: \(error.localizedDescription)")
-                self.debugInfoListener?("requestTransaction -> error: \(error.localizedDescription))")
+                print("[CallKitController][requestTransaction][\(context)] Error: \(error.localizedDescription)")
+                self.debugInfoListener?("requestTransaction (\(context)) -> error: \(error.localizedDescription))")
             } else {
-                print("[CallKitController][requestTransaction] successfully")
+                print("[CallKitController][requestTransaction][\(context)] completed successfully")
+                                self.debugInfoListener?("requestTransaction (\(context)) -> completed successfully")
             }
 
             completion?(error == nil)
@@ -304,7 +307,7 @@ extension CallKitController {
         let transaction = CXTransaction()
         transaction.addAction(setHeldCallAction)
         
-        requestTransaction(transaction)
+        requestTransaction(transaction, context: "setHeld")
     }
     
     func setMute(uuid: UUID, muted: Bool){
@@ -318,7 +321,7 @@ extension CallKitController {
         self.currentCallData["muted"] = muted
         self.callsData[uuid.uuidString.lowercased()] = self.currentCallData
 
-        requestTransaction(transaction)
+        requestTransaction(transaction, context: "setMute")
     }
     
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
@@ -348,6 +351,7 @@ extension CallKitController {
         
         requestTransaction(
             transaction,
+            context: "startCall",
             completion: { result in
                             self.debugInfoListener?("startCall -> display push notification: \(result)")
 
@@ -360,14 +364,21 @@ extension CallKitController {
     
     func answerCall(uuid: String) {
         print("[CallKitController][answerCall] uuid: \(uuid)")
-        
+        debugInfoListener?("answerCall -> uuid: \(uuid)")
+
         let callUUID = UUID(uuidString: uuid)
-        let answerCallAction = CXAnswerCallAction(call: callUUID!)
-        let transaction = CXTransaction(action: answerCallAction)
-        
-        self.callStates[uuid.lowercased()] = .accepted
-        
-        requestTransaction(transaction);
+        self.callStates[uuid.lowercased()] = .connected
+
+        if(_currentCallAnswerAction != nil){
+           configureAudioSession(active: true)
+           _currentCallAnswerAction!.fulfill();
+           _currentCallAnswerAction = nil;
+        }
+        else{
+            let answerCallAction = CXAnswerCallAction(call: callUUID!)
+            let transaction = CXTransaction(action: answerCallAction)
+            requestTransaction(transaction, context: "answerCall");
+        }
     }
 }
 
@@ -378,13 +389,21 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        print("[CallKitController][CXAnswerCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
-        
-        configureAudioSession(active: true)
-        callStates[action.callUUID.uuidString.lowercased()] = .accepted
+        var callId = action.callUUID.uuidString.lowercased()
+
+        print("[CallKitController][CXAnswerCallAction] callUUID: \(callId)")
+        debugInfoListener?("[CallKitController] CXAnswerCallAction -> callUUID: \(callId)")
+
+        if(callStates[callId] != .connected){
+            callStates[callId] = .accepted
+           _currentCallAnswerAction = action
+        }
+        else{
+          configureAudioSession(active: true)
+          action.fulfill()
+        }
+
         actionListener?(.answerCall, action.callUUID, self.currentCallData)
-        
-        action.fulfill()
     }
     
     func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {

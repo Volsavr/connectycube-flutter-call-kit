@@ -240,6 +240,18 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
+  /// Report that the current active call has been failed by your application
+  static Future<void> reportCallFailed({
+    required String? sessionId,
+  }) async {
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("reportCallFinished", {
+      'session_id': sessionId,
+      'reason': 'failed'
+    });
+  }
+
   /// Get the current call state
   ///
   /// Other platforms than Android and iOS will receive [CallState.UNKNOWN]
@@ -450,6 +462,7 @@ void _backgroundEventsCallbackDispatcher() {
 class CallState {
   static const String PENDING = "pending";
   static const String ACCEPTED = "accepted";
+  static const String CONNECTED = "connected";
   static const String REJECTED = "rejected";
   static const String UNKNOWN = "unknown";
 }

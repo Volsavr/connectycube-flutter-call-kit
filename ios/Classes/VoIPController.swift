@@ -169,6 +169,9 @@ extension VoIPController: PKPushRegistryDelegate {
             }
             
         } else {
+             print("[VoIPController][didReceiveIncomingPushWith] wrong payload type")
+             reportDebugInfo(debugInfo: "didReceiveIncomingPushWith -> wrong payload type")
+
             completion()
         }
     }

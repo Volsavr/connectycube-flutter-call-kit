@@ -52,6 +52,7 @@ class EventReceiver : BroadcastReceiver() {
                 processCallEnded(context, callId!!)
 
                 if (!isApplicationForeground(context)) {
+                    Log.i(TAG, "NotificationReceiver app in background, broadcast event")
                     broadcastIntent.putExtra("userCallbackHandleName", REJECTED_IN_BACKGROUND)
                     ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
                         context,
@@ -90,6 +91,7 @@ class EventReceiver : BroadcastReceiver() {
                 saveCallState(context, callId!!, CALL_STATE_ACCEPTED)
 
                 if (!isApplicationForeground(context)) {
+                    Log.i(TAG, "NotificationReceiver app in background, broadcast event")
                     broadcastIntent.putExtra("userCallbackHandleName", ACCEPTED_IN_BACKGROUND)
                     ConnectycubeFlutterBgPerformingService.enqueueMessageProcessing(
                         context,

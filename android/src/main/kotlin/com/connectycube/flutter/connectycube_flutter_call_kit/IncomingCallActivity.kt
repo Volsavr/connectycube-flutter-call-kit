@@ -41,6 +41,11 @@ fun createStartIncomingScreenIntent(
 }
 
 class IncomingCallActivity : Activity() {
+
+    companion object {
+        var isActive: Boolean = false
+    }
+
     private lateinit var callStateReceiver: BroadcastReceiver
     private lateinit var localBroadcastManager: LocalBroadcastManager
 
@@ -101,6 +106,8 @@ class IncomingCallActivity : Activity() {
         initUi()
         initCallStateReceiver()
         registerCallStateReceiver()
+
+        IncomingCallActivity.isActive = true;
     }
 
     private fun initCallStateReceiver() {
@@ -147,6 +154,7 @@ class IncomingCallActivity : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         unRegisterCallStateReceiver()
+        IncomingCallActivity.isActive = false;
     }
 
     private fun processIncomingData(intent: Intent) {

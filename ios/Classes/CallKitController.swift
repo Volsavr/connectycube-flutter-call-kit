@@ -65,7 +65,7 @@ class CallKitController : NSObject {
         providerConfiguration.supportsVideo = false
         providerConfiguration.maximumCallsPerCallGroup = 1
         providerConfiguration.maximumCallGroups = 1;
-        providerConfiguration.supportedHandleTypes = [.generic, .phoneNumber]
+        providerConfiguration.supportedHandleTypes = [.phoneNumber] //.generic,
         
         if #available(iOS 11.0, *) {
             providerConfiguration.includesCallsInRecents = false

@@ -13,11 +13,12 @@ enum CallEvent : String {
     case incomingCall = "incomingCall"
     case answerCall = "answerCall"
     case endCall = "endCall"
-    case setHeld = "setHeld"
     case reset = "reset"
     case startCall = "startCall"
     case setMuted = "setMuted"
     case setUnMuted = "setUnMuted"
+    case setHold = "setHold"
+    case setUnHold = "setUnHold"
 }
 
 enum CallEndedReason : String {
@@ -138,7 +139,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = false
+        update.supportsHolding = true
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -270,46 +271,6 @@ extension CallKitController {
         requestTransaction(transaction, context: "end")
     }
     
-    private func requestTransaction(_ transaction: CXTransaction, context: String,
-                    completion: ((Bool) -> Void)? = nil) {
-        callController.request(transaction) { error in
-            if let error = error {
-                print("[CallKitController][requestTransaction][\(context)] Error: \(error.localizedDescription)")
-                self.debugInfoListener?("requestTransaction (\(context)) -> error: \(error.localizedDescription))")
-            } else {
-                print("[CallKitController][requestTransaction][\(context)] completed successfully")
-                                self.debugInfoListener?("requestTransaction (\(context)) -> completed successfully")
-            }
-
-            completion?(error == nil)
-        }
-    }
-    
-    private func updateExistingCall(uuid: UUID, callerName: String){
-        print("[CallKitController][updateExistingCall] uuid: \(uuid.uuidString.lowercased())")
-        
-        let update = CXCallUpdate()
-        update.hasVideo = false
-        update.supportsGrouping = false
-        update.supportsUngrouping = false
-        update.supportsHolding = false
-        update.supportsDTMF = false
-        update.localizedCallerName = callerName
-        
-        provider.reportCall(with: uuid, updated: update)
-    }
-    
-    func setHeld(uuid: UUID, onHold: Bool) {
-        print("[CallKitController][setHeld] uuid: \(uuid.uuidString.lowercased()), onHold: \(onHold)")
-        
-        let setHeldCallAction = CXSetHeldCallAction(call: uuid, onHold: onHold)
-        
-        let transaction = CXTransaction()
-        transaction.addAction(setHeldCallAction)
-        
-        requestTransaction(transaction, context: "setHeld")
-    }
-    
     func setMute(uuid: UUID, muted: Bool){
         print("[CallKitController][setMute] uuid: \(uuid.uuidString.lowercased()), muted: \(muted)")
         debugInfoListener?("setMute -> uuid: \(uuid.uuidString.lowercased()), muted: \(muted)")
@@ -322,6 +283,20 @@ extension CallKitController {
         self.callsData[uuid.uuidString.lowercased()] = self.currentCallData
 
         requestTransaction(transaction, context: "setMute")
+    }
+
+    func setHold(uuid: UUID, isHold: Bool){
+       print("[CallKitController][setHold] uuid: \(uuid.uuidString.lowercased()), isHold: \(isHold)")
+       debugInfoListener?("setHold -> uuid: \(uuid.uuidString.lowercased()), isHold: \(isHold)")
+
+       let holdCallAction = CXSetHeldCallAction(call: uuid, onHold: isHold);
+       let transaction = CXTransaction()
+       transaction.addAction(holdCallAction)
+
+       self.currentCallData["isHold"] = isHold
+       self.callsData[uuid.uuidString.lowercased()] = self.currentCallData
+
+       requestTransaction(transaction, context: "setHold")
     }
     
     func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
@@ -380,6 +355,35 @@ extension CallKitController {
             requestTransaction(transaction, context: "answerCall");
         }
     }
+
+     private func requestTransaction(_ transaction: CXTransaction, context: String,
+                        completion: ((Bool) -> Void)? = nil) {
+            callController.request(transaction) { error in
+                if let error = error {
+                    print("[CallKitController][requestTransaction][\(context)] Error: \(error.localizedDescription)")
+                    self.debugInfoListener?("requestTransaction (\(context)) -> error: \(error.localizedDescription))")
+                } else {
+                    print("[CallKitController][requestTransaction][\(context)] completed successfully")
+                                    self.debugInfoListener?("requestTransaction (\(context)) -> completed successfully")
+                }
+
+                completion?(error == nil)
+            }
+     }
+
+     private func updateExistingCall(uuid: UUID, callerName: String){
+            print("[CallKitController][updateExistingCall] uuid: \(uuid.uuidString.lowercased())")
+
+            let update = CXCallUpdate()
+            update.hasVideo = false
+            update.supportsGrouping = false
+            update.supportsUngrouping = false
+            update.supportsHolding = true
+            update.supportsDTMF = false
+            update.localizedCallerName = callerName
+
+            provider.reportCall(with: uuid, updated: update)
+     }
 }
 
 //MARK: System notifications
@@ -427,16 +431,28 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXSetHeldCallAction) {
-        print("[CallKitController][CXSetHeldCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
-        
-        actionListener?(.setHeld, action.callUUID, ["isOnHold": action.isOnHold])
-        
+        print("[CallKitController][CXSetHeldCallAction] callUUID: \(action.callUUID.uuidString.lowercased()), isHold: \(action.isOnHold)")
+
+       //update call metadata
+       self.currentCallData["isHold"] = action.isOnHold
+       self.callsData[action.callUUID.uuidString.lowercased()] = self.currentCallData
+
+        if (action.isOnHold){
+           actionListener?(.setHold, action.callUUID, currentCallData)
+        } else {
+           actionListener?(.setUnHold, action.callUUID, currentCallData)
+        }
+
         action.fulfill()
     }
     
     func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
-        print("[CallKitController][CXSetMutedCallAction] callUUID: \(action.callUUID.uuidString.lowercased())")
-        
+        print("[CallKitController][CXSetMutedCallAction] callUUID: \(action.callUUID.uuidString.lowercased()), isMuted: \(action.isMuted)")
+
+        //update call metadata
+        self.currentCallData["muted"] = action.isMuted
+        self.callsData[action.callUUID.uuidString.lowercased()] = self.currentCallData
+
         if (action.isMuted){
             actionListener?(.setMuted, action.callUUID, currentCallData)
         } else {

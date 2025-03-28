@@ -43,7 +43,7 @@ class ConnectycubeFlutterCallKit {
 
   /// iOS only callbacks
   static Function(bool isMuted, String sessionId)? onCallMuteChanged;
-
+  static Function(bool isHold, String sessionId)? onCallHoldChanged;
   /// end iOS only callbacks
 
   static CallEventHandler? _onCallRejectedWhenTerminated;
@@ -337,6 +337,17 @@ class ConnectycubeFlutterCallKit {
     });
   }
 
+  /// Report that hold state of the current active call has been changed by your application
+  static Future<void> reportCallHoldChanges(
+      {required String? sessionId, required bool? isHold}) async {
+    if (!Platform.isIOS) return Future.value();
+
+    return _methodChannel.invokeMethod("holdCall", {
+      'session_id': sessionId,
+      'isHold': isHold,
+    });
+  }
+
   /// Returns whether the app can send fullscreen intents (required for showing
   /// the Incoming call screen on the Lockscreen)
   static Future<bool> canUseFullScreenIntent() async {
@@ -398,6 +409,14 @@ class ConnectycubeFlutterCallKit {
 
       case 'setUnMuted':
         onCallMuteChanged?.call(false, arguments["session_id"]);
+        break;
+
+      case 'setHold':
+        onCallHoldChanged?.call(true, arguments["session_id"]);
+        break;
+
+      case 'setUnHold':
+        onCallHoldChanged?.call(false, arguments["session_id"]);
         break;
 
       case 'incomingCall':

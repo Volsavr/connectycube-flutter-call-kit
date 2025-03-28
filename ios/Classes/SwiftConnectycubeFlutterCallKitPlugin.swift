@@ -191,6 +191,21 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             
             result(true)
         }
+        else if call.method == "holdCall" {
+              guard let arguments = arguments else {
+                  result(FlutterError(code: "invalid_argument", message: "No data was provided.", details: nil))
+                  return
+              }
+              let callId = arguments["session_id"] as! String
+              let isHold = arguments["isHold"] as! Bool
+
+              SwiftConnectycubeFlutterCallKitPlugin.callController.setHold(
+                  uuid: UUID(uuidString: callId)!,
+                  isHold: isHold
+              )
+
+              result(true)
+        }
         else if call.method == "getCallState" {
             guard let arguments = arguments, let callId = arguments["session_id"] as? String else {
                 result(FlutterError(code: "invalid_argument", message: "session_id was not provided.", details: nil))

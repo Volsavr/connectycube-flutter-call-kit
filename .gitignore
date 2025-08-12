@@ -9,3 +9,4 @@
 
 build/
 pubspec.lock
+/example/ios/Flutter/ephemeral

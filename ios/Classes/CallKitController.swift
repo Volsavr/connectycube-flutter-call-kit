@@ -139,7 +139,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = true
+        update.supportsHolding = false//true
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -378,7 +378,7 @@ extension CallKitController {
             update.hasVideo = false
             update.supportsGrouping = false
             update.supportsUngrouping = false
-            update.supportsHolding = true
+            update.supportsHolding = false//true
             update.supportsDTMF = false
             update.localizedCallerName = callerName
 

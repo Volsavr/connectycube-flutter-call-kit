@@ -113,7 +113,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = false
+        update.supportsHolding = true // PHAP-331: Enable hold support
         update.supportsDTMF = false
 
         let callid = UUID(uuidString: uuid)!
@@ -139,7 +139,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = false//true
+        update.supportsHolding = true // PHAP-331: Enable hold support
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -378,7 +378,7 @@ extension CallKitController {
             update.hasVideo = false
             update.supportsGrouping = false
             update.supportsUngrouping = false
-            update.supportsHolding = false//true
+            update.supportsHolding = true // PHAP-331: Enable hold support
             update.supportsDTMF = false
             update.localizedCallerName = callerName
 

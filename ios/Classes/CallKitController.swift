@@ -69,7 +69,7 @@ class CallKitController : NSObject {
         providerConfiguration.supportedHandleTypes = [.phoneNumber] //.generic,
         
         if #available(iOS 11.0, *) {
-            providerConfiguration.includesCallsInRecents = false
+            providerConfiguration.includesCallsInRecents = true
         }
         
         return providerConfiguration

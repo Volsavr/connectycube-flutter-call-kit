@@ -166,10 +166,12 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
                 return
             }
             let callId = arguments["session_id"] as! String
-            let number = arguments["number"] as! String
+            let callerName = arguments["caller_name"] as! String
+            let userInformation = arguments["user_info"] as? Dictionary<String,String>
             
             SwiftConnectycubeFlutterCallKitPlugin.callController.startCall(
-                handle: number,
+                callerName: callerName,
+                userInfo: userInformation,
                 videoEnabled: false,
                 uuid: callId
             )

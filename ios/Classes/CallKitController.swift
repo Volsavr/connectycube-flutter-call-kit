@@ -66,7 +66,7 @@ class CallKitController : NSObject {
         providerConfiguration.supportsVideo = false
         providerConfiguration.maximumCallsPerCallGroup = 1
         providerConfiguration.maximumCallGroups = 1;
-        providerConfiguration.supportedHandleTypes = [.phoneNumber] //.generic,
+        providerConfiguration.supportedHandleTypes = [.phoneNumber, .generic]
         
         if #available(iOS 11.0, *) {
             providerConfiguration.includesCallsInRecents = true
@@ -107,9 +107,20 @@ class CallKitController : NSObject {
     ) {
         print("[CallKitController][reportCanceledIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? "nil")")
 
+        // Extract phone number from userInfo for CXHandle
+        var phoneNumber: String?
+        if let userInfoString = userInfo,
+           let userInfoData = userInfoString.data(using: .utf8),
+           let userInfoDict = try? JSONSerialization.jsonObject(with: userInfoData) as? [String: Any] {
+            phoneNumber = userInfoDict["phoneNumber"] as? String
+        }
+
+        print("[CallKitController][reportCanceledIncomingCall] Extracted phone number from userInfo: \(phoneNumber ?? "nil")")
+
         let update = CXCallUpdate()
         update.localizedCallerName = callInitiatorName
-        update.remoteHandle = CXHandle(type: .generic, value: uuid)
+        update.remoteHandle = CXHandle(type: .phoneNumber, value: phoneNumber ?? "")
+
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
@@ -132,10 +143,21 @@ class CallKitController : NSObject {
         completion: ((Error?) -> Void)?
     ) {
         print("[CallKitController][reportIncomingCall] call data: \(uuid), \(callType), \(callInitiatorId), \(callInitiatorName), \(opponents), \(userInfo ?? "nil")")
-        
+
+       // Extract phone number from userInfo for CXHandle
+       var phoneNumber: String?
+       if let userInfoString = userInfo,
+          let userInfoData = userInfoString.data(using: .utf8),
+          let userInfoDict = try? JSONSerialization.jsonObject(with: userInfoData) as? [String: Any] {
+           phoneNumber = userInfoDict["phoneNumber"] as? String
+       }
+
+        print("[CallKitController][reportIncomingCall] Extracted phone number from userInfo: \(phoneNumber ?? "nil")")
+
         let update = CXCallUpdate()
         update.localizedCallerName = callInitiatorName
-        update.remoteHandle = CXHandle(type: .generic, value: uuid)
+        update.remoteHandle = CXHandle(type: .phoneNumber, value: phoneNumber ?? "")
+
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
@@ -299,11 +321,28 @@ extension CallKitController {
        requestTransaction(transaction, context: "setHold")
     }
     
-    func startCall(handle: String, videoEnabled: Bool, uuid: String? = nil) {
-        print("[CallKitController][startCall] handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
-        debugInfoListener?("startCall -> display push notification handle:\(handle), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
+    func startCall(callerName: String, userInfo: Dictionary<String, String>?,  videoEnabled: Bool, uuid: String? = nil) {
+        // Extract phone number from userInfo for CXHandle
+        var phoneNumber: String?
+        if let userInfoData = userInfo {
+              phoneNumber = userInfoData["phoneNumber"] as? String
+        }
 
-        let cxHandle = CXHandle(type: .generic, value: handle)
+        // prepare string representation of user Data
+        var userInfoString: String?
+        if JSONSerialization.isValidJSONObject(userInfo) {
+            do {
+                let data = try JSONSerialization.data(withJSONObject: userInfo, options: .prettyPrinted)
+                userInfoString = String(data: data, encoding: .utf8)
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+
+        print("[CallKitController][startCall] callerName:\(callerName), handle:\(phoneNumber), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
+        debugInfoListener?("startCall -> display push notification callerName:\(callerName), handle:\(phoneNumber), videoEnabled: \(videoEnabled) uuid: \(uuid ?? "nil")")
+
+        let cxHandle = CXHandle(type: .phoneNumber, value: phoneNumber ?? "")
         let callUUID = uuid == nil ? UUID() : UUID(uuidString: uuid!)
         let startCallAction = CXStartCallAction(call: callUUID!, handle: cxHandle)
         startCallAction.isVideo = videoEnabled
@@ -312,13 +351,13 @@ extension CallKitController {
         
         let opponents = [1]
         self.currentCallData["session_id"] = callUUID?.uuidString.lowercased()
-        self.currentCallData["caller_name"] = handle
+        self.currentCallData["caller_name"] = callerName
         
         self.currentCallData["session_id"] = uuid
         self.currentCallData["call_type"] = 0
         self.currentCallData["caller_id"] = 0
         self.currentCallData["call_opponents"] = opponents.map { String($0) }.joined(separator: ",")
-        self.currentCallData["user_info"] = nil
+        self.currentCallData["user_info"] = userInfoString
         self.currentCallData["muted"] = false
         
         self.callStates[callUUID!.uuidString.lowercased()] = .pending
@@ -331,7 +370,7 @@ extension CallKitController {
                             self.debugInfoListener?("startCall -> display push notification: \(result)")
 
                             if(result) {
-                                self.updateExistingCall(uuid: callUUID!, callerName: handle);
+                                self.updateExistingCall(uuid: callUUID!, callerName: callerName);
                             }
                         }
         )
@@ -463,10 +502,7 @@ extension CallKitController: CXProviderDelegate {
     }
     
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        print("[CallKitController][CXStartCallAction]: callUUID: \(action.callUUID.uuidString.lowercased())")
-
-        //TODO: Notification
-        //actionListener?(.startCall, action.callUUID, currentCallData)
+        print("[CallKitController][CXStartCallAction]: callUUID: \(action.callUUID.uuidString.lowercased()), handle: \(action.handle.value)")
 
         //setup audioSession
         configureAudioSession(active: true)

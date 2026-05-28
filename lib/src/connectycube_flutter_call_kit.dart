@@ -202,7 +202,8 @@ class ConnectycubeFlutterCallKit {
         "startCall",
         {
           'session_id': callEvent.sessionId,
-          'number':callEvent.callerName
+          'caller_name':callEvent.callerName,
+          'user_info': callEvent.userInfo
         });
   }
 

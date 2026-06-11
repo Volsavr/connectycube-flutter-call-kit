@@ -67,7 +67,8 @@ class ConnectycubeFlutterCallKit {
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
-      String? color}) {
+      String? color,
+      bool? iosHoldEnabled}) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
@@ -76,7 +77,8 @@ class ConnectycubeFlutterCallKit {
         ringtone: ringtone,
         icon: icon,
         notificationIcon: notificationIcon,
-        color: color);
+        color: color,
+        iosHoldEnabled: iosHoldEnabled);
 
     initEventsHandler();
   }
@@ -165,14 +167,16 @@ class ConnectycubeFlutterCallKit {
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
-      String? color}) {
+      String? color,
+      bool? iosHoldEnabled}) {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
     return _methodChannel.invokeMethod('updateConfig', {
       'ringtone': ringtone,
       'icon': icon,
       'notification_icon': notificationIcon,
-      'color': color,
+            'color': color,
+      'ios_hold_enabled': iosHoldEnabled,
     });
   }
 

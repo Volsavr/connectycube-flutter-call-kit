@@ -54,6 +54,8 @@ class CallKitController : NSObject {
     }
     
     //TODO: construct configuration from flutter. pass into init over method channel
+    static var iosHoldEnabled: Bool = false // PHAP-331: Controlled by QA settings
+    
     static var providerConfiguration: CXProviderConfiguration = {
         let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as! String
         var providerConfiguration: CXProviderConfiguration
@@ -76,6 +78,7 @@ class CallKitController : NSObject {
     }()
     
     static func updateConfig(
+        iosHoldEnabled: Bool?,
         ringtone: String?,
         icon: String?
         
@@ -89,6 +92,10 @@ class CallKitController : NSObject {
             let iconData = iconImage?.pngData()
             
             providerConfiguration.iconTemplateImageData = iconData
+        }
+        
+        if(iosHoldEnabled != nil){
+            self.iosHoldEnabled = iosHoldEnabled!
         }
     }
 
@@ -124,7 +131,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = true // PHAP-331: Enable hold support
+        update.supportsHolding = CallKitController.iosHoldEnabled // PHAP-331: Controlled by QA settings
         update.supportsDTMF = false
 
         let callid = UUID(uuidString: uuid)!
@@ -161,7 +168,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = true // PHAP-331: Enable hold support
+        update.supportsHolding = CallKitController.iosHoldEnabled // PHAP-331: Controlled by QA settings
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -417,7 +424,7 @@ extension CallKitController {
             update.hasVideo = false
             update.supportsGrouping = false
             update.supportsUngrouping = false
-            update.supportsHolding = true // PHAP-331: Enable hold support
+            update.supportsHolding = CallKitController.iosHoldEnabled // PHAP-331: Controlled by QA settings
             update.supportsDTMF = false
             update.localizedCallerName = callerName
 

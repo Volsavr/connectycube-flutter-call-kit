@@ -68,7 +68,8 @@ class ConnectycubeFlutterCallKit {
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
       String? color,
-      bool? iosHoldEnabled}) {
+      bool? iosHoldEnabled,
+      bool? iosShowCallsInRecents}) {
     _onCallAccepted = onCallAccepted;
     _onCallRejected = onCallRejected;
     _onCallIncoming = onCallIncoming;
@@ -78,7 +79,8 @@ class ConnectycubeFlutterCallKit {
         icon: icon,
         notificationIcon: notificationIcon,
         color: color,
-        iosHoldEnabled: iosHoldEnabled);
+        iosHoldEnabled: iosHoldEnabled,
+        iosShowCallsInRecents: iosShowCallsInRecents);
 
     initEventsHandler();
   }
@@ -162,21 +164,24 @@ class ConnectycubeFlutterCallKit {
   /// [icon] - the name of image in the `drawable` folder for Android and the name of Assests set for iOS
   /// [notificationIcon] - the name of the image in the `drawable` folder, uses as Notification Small Icon for Android, ignored for iOS
   /// [color] - the color in the format '#RRGGBB', uses as an Android Notification accent color, ignored for iOS
+  /// [iosShowCallsInRecents] - whether to show calls in iOS recents (default: true), iOS only
   Future<void> updateConfig(
       {String? ringtone,
       String? icon,
       @Deprecated('Use `AndroidManifest.xml` meta-data instead')
       String? notificationIcon,
       String? color,
-      bool? iosHoldEnabled}) {
+      bool? iosHoldEnabled,
+      bool? iosShowCallsInRecents}) {
     if (!Platform.isAndroid && !Platform.isIOS) return Future.value();
 
     return _methodChannel.invokeMethod('updateConfig', {
       'ringtone': ringtone,
       'icon': icon,
       'notification_icon': notificationIcon,
-            'color': color,
+      'color': color,
       'ios_hold_enabled': iosHoldEnabled,
+      'ios_show_calls_in_recents': iosShowCallsInRecents,
     });
   }
 

@@ -55,7 +55,8 @@ class CallKitController : NSObject {
     
     //TODO: construct configuration from flutter. pass into init over method channel
     static var iosHoldEnabled: Bool = false // PHAP-331: Controlled by QA settings
-    
+    static var iosShowCallsInRecents: Bool = true // Default: true, can be controlled by device contacts setting
+
     static var providerConfiguration: CXProviderConfiguration = {
         let appName = Bundle.main.infoDictionary?[kCFBundleNameKey as String] as! String
         var providerConfiguration: CXProviderConfiguration
@@ -64,39 +65,50 @@ class CallKitController : NSObject {
         } else {
             providerConfiguration = CXProviderConfiguration(localizedName: appName)
         }
-        
+
         providerConfiguration.supportsVideo = false
         providerConfiguration.maximumCallsPerCallGroup = 1
         providerConfiguration.maximumCallGroups = 1;
         providerConfiguration.supportedHandleTypes = [.phoneNumber, .generic]
-        
+
         if #available(iOS 11.0, *) {
-            providerConfiguration.includesCallsInRecents = true
+            providerConfiguration.includesCallsInRecents = iosShowCallsInRecents
         }
-        
+
         return providerConfiguration
     }()
     
-    static func updateConfig(
+    func updateConfig(
         iosHoldEnabled: Bool?,
+        iosShowCallsInRecents: Bool?,
         ringtone: String?,
         icon: String?
-        
+
     ) {
         if(ringtone != nil){
-            providerConfiguration.ringtoneSound = ringtone
+            CallKitController.providerConfiguration.ringtoneSound = ringtone
         }
-        
+
         if(icon != nil){
             let iconImage = UIImage(named: icon!)
             let iconData = iconImage?.pngData()
-            
-            providerConfiguration.iconTemplateImageData = iconData
+
+            CallKitController.providerConfiguration.iconTemplateImageData = iconData
         }
-        
+
         if(iosHoldEnabled != nil){
-            self.iosHoldEnabled = iosHoldEnabled!
+            CallKitController.iosHoldEnabled = iosHoldEnabled!
         }
+
+        if(iosShowCallsInRecents != nil){
+            CallKitController.iosShowCallsInRecents = iosShowCallsInRecents!
+            if #available(iOS 11.0, *) {
+                CallKitController.providerConfiguration.includesCallsInRecents = iosShowCallsInRecents!
+            }
+        }
+
+        // Apply the updated configuration to the provider to take effect immediately
+        self.provider.configuration = CallKitController.providerConfiguration
     }
 
     func hasActiveCall() -> Bool {

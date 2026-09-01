@@ -91,8 +91,9 @@ public class SwiftConnectycubeFlutterCallKitPlugin: NSObject, FlutterPlugin {
             let ringtone = arguments["ringtone"] as? String
             let icon = arguments["icon"] as? String
             let iosHoldEnabled = arguments["ios_hold_enabled"] as? Bool
-            CallKitController.updateConfig(iosHoldEnabled: iosHoldEnabled, ringtone: ringtone, icon: icon)
-            
+            let iosShowCallsInRecents = arguments["ios_show_calls_in_recents"] as? Bool
+            SwiftConnectycubeFlutterCallKitPlugin.callController.updateConfig(iosHoldEnabled: iosHoldEnabled, iosShowCallsInRecents: iosShowCallsInRecents, ringtone: ringtone, icon: icon)
+
             result(true)
         }
         else if call.method == "showCallNotification" {
